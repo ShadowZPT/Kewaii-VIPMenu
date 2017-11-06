@@ -9,7 +9,7 @@
 #define PLUGIN_NAME 			"VipMenu"
 #define PLUGIN_AUTHOR 			"Kewaii"
 #define PLUGIN_DESCRIPTION		"General VipMenu"
-#define PLUGIN_VERSION 			"1.6.1"
+#define PLUGIN_VERSION 			"1.6.3"
 #define PLUGIN_TAG 				"{pink}[VipMenu by Kewaii]{green}"
 
 public Plugin myinfo =
@@ -28,15 +28,47 @@ int BenefitsChosen[MAXPLAYERS + 1] = 0;
 int extrasChosen[MAXPLAYERS + 1] = 0;
 int weaponsChosen[MAXPLAYERS + 1] = 0;
 
-int MaxBenefits = 3;
-int MaxExtras = 2;
-int MaxWeapons = 2;
+int MaxBenefits;
+int MaxExtras;
+int MaxWeapons;
 
+ConVar g_Cvar_BenefitsMax;
+ConVar g_Cvar_WeaponsEnabled;
+ConVar g_Cvar_WeaponsMax;
+ConVar g_Cvar_BuffsEnabled;
+ConVar g_Cvar_BuffsMax;
+ConVar g_Cvar_WeaponAWPEnabled;
+ConVar g_Cvar_WeaponAK47Enabled;
+ConVar g_Cvar_WeaponM4A1Enabled;
+ConVar g_Cvar_WeaponM4A1_SilencerEnabled;
+ConVar g_Cvar_BuffWHEnabled;
+ConVar g_Cvar_BuffMedicKitEnabled;
+
+bool g_bWeaponsEnabled, g_bBuffsEnabled, g_bWeaponAWPEnabled, g_bWeaponAK47Enabled, g_bWeaponM4A1Enabled, g_bWeaponM4A1_SilencerEnabled, g_bBuffMedicKitEnabled, g_bBuffWHEnabled;
 public void OnPluginStart()
 {
-    HookEvent("round_start", Event_RoundStart);
-    RegConsoleCmd("sm_vipspawn", Command_VIPSpawn);
-    RegConsoleCmd("sm_vipmenu", VipMenu, "Opens VIPMenu");
+	g_Cvar_BenefitsMax = CreateConVar("kewaii_vipmenu_benefits_max", "3", "Maximum allowed amount of benefits per round");
+	
+	g_Cvar_WeaponsEnabled = CreateConVar("kewaii_vipmenu_weapons", "1", "Enables/Disables Weapons");
+	g_Cvar_WeaponsMax = CreateConVar("kewaii_vipmenu_weapons_max", "2", "Maximum allowed amount of weapons per round");
+	
+	g_Cvar_BuffsEnabled = CreateConVar("kewaii_vipmenu_buffs", "1", "Enables/Disables Buffs");
+	g_Cvar_BuffsMax = CreateConVar("kewaii_vipmenu_buffs_max", "2", "Maximum allowed amount of buffs per round");
+	
+	g_Cvar_WeaponAWPEnabled = CreateConVar("kewaii_vipmenu_weapon_awp", "1", "Enables/Disables AWP");
+	g_Cvar_WeaponAK47Enabled = CreateConVar("kewaii_vipmenu_weapon_ak47", "1", "Enables/Disables AK47");
+	g_Cvar_WeaponM4A1Enabled = CreateConVar("kewaii_vipmenu_weapon_m4a1", "1", "Enables/Disables M4A4");
+	g_Cvar_WeaponM4A1_SilencerEnabled = CreateConVar("kewaii_vipmenu_weapon_m4a1_silencer", "1", "Enables/Disables M4A1-S");
+	
+	g_Cvar_BuffWHEnabled = CreateConVar("kewaii_vipmenu_buff_wh", "1", "Enables/Disables WH Grenade");
+	g_Cvar_BuffMedicKitEnabled = CreateConVar("kewaii_vipmenu_buff_medickit", "1", "Enables/Disables Medic Kit");
+	HookEvent("round_start", Event_RoundStart);
+	RegConsoleCmd("sm_vipspawn", Command_VIPSpawn);
+	RegConsoleCmd("sm_vipmenu", VipMenu, "Opens VIPMenu");
+	AutoExecConfig(true, "kewaii_vipmenu");
+	MaxBenefits = GetConVarInt(g_Cvar_BenefitsMax);
+	MaxWeapons = GetConVarInt(g_Cvar_WeaponsMax);
+	MaxExtras = GetConVarInt(g_Cvar_BuffsMax);
 }
 
 public Action VipMenu(int client, int args)
@@ -68,9 +100,15 @@ public Action Event_RoundStart(Handle event, const char[] name, bool dontBroadca
 Menu CreateBuffsMenu()
 {
 	Menu menu = new Menu(BuffsMenuHandler);
-	menu.SetTitle("Buffs Menu by Kewaii");		
-	menu.AddItem("WH", "Granada de WallHack");
-	menu.AddItem("Medkit", "MedKit");	
+	menu.SetTitle("Buffs Menu by Kewaii");	
+	g_bBuffWHEnabled = view_as<bool> (GetConVarInt(g_Cvar_BuffWHEnabled));
+	g_bBuffMedicKitEnabled = view_as<bool> (GetConVarInt(g_Cvar_BuffMedicKitEnabled));
+	if (g_bBuffWHEnabled) { 
+		menu.AddItem("WH", "Granada de WallHack");
+	}
+	if (g_bBuffMedicKitEnabled) { 
+		menu.AddItem("Medkit", "MedKit");	
+	}
 	menu.ExitBackButton = true;
 	return menu;
 }
@@ -79,20 +117,78 @@ Menu CreateWeaponsMenu()
 {
 	Menu menu = new Menu(WeaponsMenuHandler);
 	menu.SetTitle("Weapons Menu by Kewaii");	
-	menu.AddItem("AWP_Deagle", "AWP & Deagle");
-	menu.AddItem("AK47_Deagle", "AK47 & Deagle");
-	menu.AddItem("M4A4_Deagle", "M4A4 & Deagle");
-	menu.AddItem("M4A1S_Deagle", "M4A1S & Deagle");
+	g_bWeaponAWPEnabled = view_as<bool> (GetConVarInt(g_Cvar_WeaponAWPEnabled));
+	g_bWeaponAK47Enabled = view_as<bool> (GetConVarInt(g_Cvar_WeaponAK47Enabled));
+	g_bWeaponM4A1Enabled = view_as<bool> (GetConVarInt(g_Cvar_WeaponM4A1Enabled));
+	g_bWeaponM4A1_SilencerEnabled = view_as<bool> (GetConVarInt(g_Cvar_WeaponM4A1_SilencerEnabled));
+	if (g_bWeaponAWPEnabled) {
+		menu.AddItem("AWP_Deagle", "AWP & Deagle");
+	}	
+	if (g_bWeaponAK47Enabled) {
+		menu.AddItem("AK47_Deagle", "AK47 & Deagle");
+	}
+	if (g_bWeaponM4A1Enabled) {
+		menu.AddItem("M4A4_Deagle", "M4A4 & Deagle");
+	}
+	if (g_bWeaponM4A1_SilencerEnabled) {
+		menu.AddItem("M4A1S_Deagle", "M4A1S & Deagle");
+	}
 	menu.ExitBackButton = true;
 	return menu;
 }
 
 Menu CreateMainMenu()
 {
-	Menu menu = new Menu(MainMenuHandler);
-	menu.SetTitle("Vip Menu by Kewaii");	
-	menu.AddItem("Weapons", "Armas");
-	menu.AddItem("Buffs", "Buffs");
+	Menu menu;
+	g_bWeaponsEnabled = view_as<bool> (GetConVarInt(g_Cvar_WeaponsEnabled));
+	g_bWeaponAWPEnabled = view_as<bool> (GetConVarInt(g_Cvar_WeaponAWPEnabled));
+	g_bWeaponAK47Enabled = view_as<bool> (GetConVarInt(g_Cvar_WeaponAK47Enabled));
+	g_bWeaponM4A1Enabled = view_as<bool> (GetConVarInt(g_Cvar_WeaponM4A1Enabled));
+	g_bWeaponM4A1_SilencerEnabled = view_as<bool> (GetConVarInt(g_Cvar_WeaponM4A1_SilencerEnabled));
+	g_bWeaponsEnabled = view_as<bool> (GetConVarInt(g_Cvar_WeaponsEnabled));
+	g_bBuffsEnabled = view_as<bool> (GetConVarInt(g_Cvar_BuffsEnabled));
+	g_bBuffWHEnabled = view_as<bool> (GetConVarInt(g_Cvar_BuffWHEnabled));
+	g_bBuffMedicKitEnabled = view_as<bool> (GetConVarInt(g_Cvar_BuffMedicKitEnabled));
+	if (g_bWeaponsEnabled && g_bBuffsEnabled) {
+		menu = new Menu(MainMenuHandler);
+		menu.SetTitle("Vip Menu by Kewaii");	
+		menu.AddItem("Weapons", "Armas");
+		menu.AddItem("Buffs", "Buffs");
+	}
+	else if (g_bWeaponsEnabled) {
+		menu = new Menu(WeaponsMenuHandler);
+		menu.SetTitle("Vip Menu by Kewaii");
+		if (g_bWeaponAWPEnabled) {
+			menu.AddItem("AWP_Deagle", "AWP & Deagle");
+		}	
+		if (g_bWeaponAK47Enabled) {
+			menu.AddItem("AK47_Deagle", "AK47 & Deagle");
+		}
+		if (g_bWeaponM4A1Enabled) {
+			menu.AddItem("M4A4_Deagle", "M4A4 & Deagle");
+		}
+		if (g_bWeaponM4A1_SilencerEnabled) {
+			menu.AddItem("M4A1S_Deagle", "M4A1S & Deagle");
+		}
+	}
+	else if (g_bBuffsEnabled) {
+		menu = new Menu(BuffsMenuHandler);
+		menu.SetTitle("Vip Menu by Kewaii");
+		if (g_bBuffWHEnabled) { 
+			menu.AddItem("WH", "Granada de WallHack");
+		}
+		if (g_bBuffMedicKitEnabled) { 
+			menu.AddItem("Medkit", "MedKit");	
+		}	
+	}
+	/*
+	if (g_bWeaponsEnabled && (g_bWeaponAWPEnabled || g_bWeaponAK47Enabled || g_bWeaponM4A1Enabled || g_bWeaponM4A1_SilencerEnabled)) {
+		menu.AddItem("Weapons", "Armas");		
+	}
+	if (g_bBuffsEnabled && (g_bBuffWHEnabled || g_bBuffMedicKitEnabled)) {
+		menu.AddItem("Buffs", "Buffs");	
+	}
+	*/
 	menu.AddItem("Leave", "Sair");
 	menu.ExitButton = false;
 	return menu;
