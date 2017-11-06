@@ -9,7 +9,7 @@
 #define PLUGIN_NAME 			"VipMenu"
 #define PLUGIN_AUTHOR 			"Kewaii"
 #define PLUGIN_DESCRIPTION		"General VipMenu"
-#define PLUGIN_VERSION 			"1.6.3"
+#define PLUGIN_VERSION 			"1.6.4"
 #define PLUGIN_TAG 				"{pink}[VipMenu by Kewaii]{green}"
 
 public Plugin myinfo =
@@ -92,6 +92,7 @@ public Action Event_RoundStart(Handle event, const char[] name, bool dontBroadca
 				BenefitsChosen[i] = 0;
 				extrasChosen[i] = 0;
 				weaponsChosen[i] = 0;
+				revived[i] = false;
 			}
         }
     }
