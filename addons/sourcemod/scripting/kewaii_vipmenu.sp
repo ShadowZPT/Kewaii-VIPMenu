@@ -182,14 +182,6 @@ Menu CreateMainMenu()
 			menu.AddItem("Medkit", "MedKit");	
 		}	
 	}
-	/*
-	if (g_bWeaponsEnabled && (g_bWeaponAWPEnabled || g_bWeaponAK47Enabled || g_bWeaponM4A1Enabled || g_bWeaponM4A1_SilencerEnabled)) {
-		menu.AddItem("Weapons", "Armas");		
-	}
-	if (g_bBuffsEnabled && (g_bBuffWHEnabled || g_bBuffMedicKitEnabled)) {
-		menu.AddItem("Buffs", "Buffs");	
-	}
-	*/
 	menu.AddItem("Leave", "Sair");
 	menu.ExitButton = false;
 	return menu;
