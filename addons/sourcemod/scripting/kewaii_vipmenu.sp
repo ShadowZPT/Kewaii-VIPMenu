@@ -1,6 +1,7 @@
 #include <sourcemod>
 #include <cstrike>
 #include <sdktools>
+#include <sdkhooks>
 #include <csgocolors>
 
 #pragma semicolon 1
@@ -9,7 +10,7 @@
 #define PLUGIN_NAME 			"VipMenu"
 #define PLUGIN_AUTHOR 			"Kewaii"
 #define PLUGIN_DESCRIPTION		"General VipMenu"
-#define PLUGIN_VERSION 			"1.6.4"
+#define PLUGIN_VERSION 			"1.7.0"
 #define PLUGIN_TAG 				"{pink}[VipMenu by Kewaii]{green}"
 
 public Plugin myinfo =
@@ -23,6 +24,7 @@ public Plugin myinfo =
 
 bool revived[MAXPLAYERS+1] = false;
 bool choseOnce[MAXPLAYERS + 1] = false;
+bool isUsingUnlimitedAmmo[MAXPLAYERS + 1] = false;
 
 int BenefitsChosen[MAXPLAYERS + 1] = 0;
 int extrasChosen[MAXPLAYERS + 1] = 0;
@@ -43,7 +45,13 @@ ConVar g_Cvar_WeaponM4A1Enabled;
 ConVar g_Cvar_WeaponM4A1_SilencerEnabled;
 ConVar g_Cvar_BuffWHEnabled;
 ConVar g_Cvar_BuffMedicKitEnabled;
+ConVar g_Cvar_BuffUnlimitedAmmoEnabled;
+ConVar g_Cvar_AutoHelmetEnabled;
+ConVar g_Cvar_AutoArmorEnabled;
+ConVar g_Cvar_AutoArmorQuantity;
 
+bool g_bAutoHelmetEnabled, g_bAutoArmorEnabled, g_bBuffUnlimitedAmmoEnabled;
+int g_iAutoArmorQuantity;
 bool g_bWeaponsEnabled, g_bBuffsEnabled, g_bWeaponAWPEnabled, g_bWeaponAK47Enabled, g_bWeaponM4A1Enabled, g_bWeaponM4A1_SilencerEnabled, g_bBuffMedicKitEnabled, g_bBuffWHEnabled;
 public void OnPluginStart()
 {
@@ -62,13 +70,29 @@ public void OnPluginStart()
 	
 	g_Cvar_BuffWHEnabled = CreateConVar("kewaii_vipmenu_buff_wh", "1", "Enables/Disables WH Grenade");
 	g_Cvar_BuffMedicKitEnabled = CreateConVar("kewaii_vipmenu_buff_medickit", "1", "Enables/Disables Medic Kit");
+	
+	g_Cvar_BuffUnlimitedAmmoEnabled = CreateConVar("kewaii_vipmenu_buff_unlimitedammo", "1", "Enables/Disables Unlimited Ammo");
+	
+	g_Cvar_AutoHelmetEnabled = CreateConVar("kewaii_vipmenu_auto_helmet", "1", "Enables/Disables Helmet on Spawn");
+	g_Cvar_AutoArmorEnabled = CreateConVar("kewaii_vipmenu_auto_armor", "1", "Enables/Disables Armor on Spawn");
+	g_Cvar_AutoArmorQuantity = CreateConVar("kewaii_vipmenu_auto_armorquantity", "100", "Defines Armor Quantity", _, true, 1.0, true, 500.0);
 	HookEvent("round_start", Event_RoundStart);
+	HookEvent("weapon_fire", ClientWeaponReload);
+	
 	RegConsoleCmd("sm_vipspawn", Command_VIPSpawn);
 	RegConsoleCmd("sm_vipmenu", VipMenu, "Opens VIPMenu");
+	
 	AutoExecConfig(true, "kewaii_vipmenu");
-	MaxBenefits = GetConVarInt(g_Cvar_BenefitsMax);
-	MaxWeapons = GetConVarInt(g_Cvar_WeaponsMax);
-	MaxExtras = GetConVarInt(g_Cvar_BuffsMax);
+	
+	LoadTranslations("kewaii_vipmenu.phrases");
+	
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if(IsClientInGame(i))
+		{
+			OnClientPutInServer(i);
+		}
+	}
 }
 
 public Action VipMenu(int client, int args)
@@ -82,6 +106,12 @@ public Action VipMenu(int client, int args)
 
 public Action Event_RoundStart(Handle event, const char[] name, bool dontBroadcast)
 {
+	MaxBenefits = GetConVarInt(g_Cvar_BenefitsMax);
+	MaxWeapons = GetConVarInt(g_Cvar_WeaponsMax);
+	MaxExtras = GetConVarInt(g_Cvar_BuffsMax);
+	g_iAutoArmorQuantity = GetConVarInt(g_Cvar_AutoArmorQuantity);
+	g_bAutoArmorEnabled = view_as<bool> (GetConVarInt(g_Cvar_AutoArmorEnabled));
+	g_bAutoHelmetEnabled = view_as<bool> (GetConVarInt(g_Cvar_AutoHelmetEnabled));
 	for(int i = 1; i <= MaxClients; i++)
 	{
 		if(IsClientInGame(i)) 
@@ -93,9 +123,19 @@ public Action Event_RoundStart(Handle event, const char[] name, bool dontBroadca
 				extrasChosen[i] = 0;
 				weaponsChosen[i] = 0;
 				revived[i] = false;
+				if (g_bAutoArmorEnabled)
+				{
+					SetEntProp(i, Prop_Send, "m_ArmorValue", g_iAutoArmorQuantity);
+				}
+				if (g_bAutoHelmetEnabled)
+				{
+					SetEntProp(i, Prop_Send, "m_bHasHelmet", 1);
+				}			
 			}
+			isUsingUnlimitedAmmo[i] = false;
         }
     }
+ 
 }
 
 Menu CreateBuffsMenu()
@@ -104,11 +144,15 @@ Menu CreateBuffsMenu()
 	menu.SetTitle("Buffs Menu by Kewaii");	
 	g_bBuffWHEnabled = view_as<bool> (GetConVarInt(g_Cvar_BuffWHEnabled));
 	g_bBuffMedicKitEnabled = view_as<bool> (GetConVarInt(g_Cvar_BuffMedicKitEnabled));
+	g_bBuffUnlimitedAmmoEnabled = view_as<bool> (GetConVarInt(g_Cvar_BuffUnlimitedAmmoEnabled));
 	if (g_bBuffWHEnabled) { 
 		menu.AddItem("WH", "Granada de WallHack");
 	}
 	if (g_bBuffMedicKitEnabled) { 
 		menu.AddItem("Medkit", "MedKit");	
+	}
+	if (g_bBuffUnlimitedAmmoEnabled) { 
+		menu.AddItem("UnlimitedAmmo", "Balas Infinitas");	
 	}
 	menu.ExitBackButton = true;
 	return menu;
@@ -181,6 +225,9 @@ Menu CreateMainMenu()
 		if (g_bBuffMedicKitEnabled) { 
 			menu.AddItem("Medkit", "MedKit");	
 		}	
+		if (g_bBuffMedicKitEnabled) { 
+			menu.AddItem("UnlimitedAmmo", "Balas Infinitas");	
+		}	
 	}
 	menu.AddItem("Leave", "Sair");
 	menu.ExitButton = false;
@@ -210,6 +257,13 @@ public int BuffsMenuHandler(Menu menu, MenuAction action, int client, int select
 					{
 						CPrintToChat(client, "%s Escolheste o bônus: {red}Granada de WallHack{green}.", PLUGIN_TAG);
 						GivePlayerItem(client, "weapon_tagrenade");
+						extrasChosen[client]++;
+						BenefitsChosen[client]++;
+					}
+					if (StrEqual(menuIdStr, "UnlimitedAmmo"))
+					{
+						CPrintToChat(client, "%s Escolheste o bônus: {red}Balas Infinitas{green}.", PLUGIN_TAG);
+						isUsingUnlimitedAmmo[client] = true;
 						extrasChosen[client]++;
 						BenefitsChosen[client]++;
 					}
@@ -384,6 +438,54 @@ public Action Command_VIPSpawn(int client, int args)
 		CPrintToChat(client, "%s Não Estás morto", PLUGIN_TAG);
 	}
 	return Plugin_Handled;
+}
+
+public void OnClientPutInServer(int client)
+{
+	SDKHook(client, SDKHook_WeaponEquipPost, EventItemPickup2);
+}
+
+public void ClientWeaponReload(Handle event, const char [] name, bool dontBroadcast)
+{
+    int client = GetClientOfUserId(GetEventInt(event,  "userid"));
+    SetUnlimitedAmmo(client);
+}
+
+void SetUnlimitedAmmo(int client)
+{
+	if (view_as<bool> (GetConVarInt(g_Cvar_BuffUnlimitedAmmoEnabled)))
+	{
+		if(IsPlayerAlive(client))
+		{
+			if (HasClientFlag(client, ADMFLAG_CUSTOM1))
+			{
+				if (isUsingUnlimitedAmmo[client])
+				{
+					SetPrimaryAmmo(client, 201);
+				}
+			}
+		}
+	}
+}
+
+int SetPrimaryAmmo(int client, int ammo)
+{
+	int iWeapon = GetEntDataEnt2(client, FindSendPropInfo("CCSPlayer", "m_hActiveWeapon"));
+	return SetEntData(iWeapon, FindSendPropInfo("CBaseCombatWeapon", "m_iClip1"), ammo);
+}
+
+public Action EventItemPickup2(int client, int weapon)
+{
+	if (view_as<bool> (GetConVarInt(g_Cvar_BuffUnlimitedAmmoEnabled)))
+	{
+		if (HasClientFlag(client, ADMFLAG_CUSTOM1)) 
+		{
+			if (isUsingUnlimitedAmmo[client])
+			{
+				SetPrimaryAmmo(client, 201);
+			}
+		}
+	}
 }
 
 public bool HasClientFlag(int client, int flag)
