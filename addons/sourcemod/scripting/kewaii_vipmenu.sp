@@ -58,6 +58,7 @@ bool g_bAutoHelmetEnabled, g_bAutoArmorEnabled, g_bBuffUnlimitedAmmoEnabled;
 int g_iAutoArmorQuantity;
 int g_iMaxHealth, g_iHealthRegenedQuantity;
 bool g_bWeaponsEnabled, g_bBuffsEnabled, g_bWeaponAWPEnabled, g_bWeaponAK47Enabled, g_bWeaponM4A1Enabled, g_bWeaponM4A1_SilencerEnabled, g_bBuffMedicKitEnabled, g_bBuffWHEnabled;
+
 public void OnPluginStart()
 {
 	g_Cvar_BenefitsMax = CreateConVar("kewaii_vipmenu_benefits_max", "3", "Maximum allowed amount of benefits per round");
@@ -96,14 +97,6 @@ public void OnPluginStart()
 	AutoExecConfig(true, "kewaii_vipmenu");
 	
 	LoadTranslations("kewaii_vipmenu.phrases");
-	
-	for(int i = 1; i <= MaxClients; i++)
-	{
-		if(IsClientInGame(i))
-		{
-			OnClientPutInServer(i);
-		}
-	}
 }
 
 public Action OnPlayerDeath(Handle event, char[] name, bool dontBroadcast)
