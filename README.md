@@ -12,6 +12,25 @@
 ## About
 
 This plugins lets VIP Player get various perks from a VIPMenu to Health Regeneration
+### VIPMenu with:
+#### 4 Weapons
+* AWP + Deagle
+* AK47 + Deagle
+* M4A4 + Deagle
+* M4A1-S + Deagle
+#### 3 Buffs
+* Medic Kit
+* Wallhack Grenade
+* Unlimited Ammo
+### VIPSpawn
+* Can be used if joined server mid-round
+### Health Regen
+* Regens 10 Health after killing a player
+* Has a maximum (Default 150)
+### Armor and Helmet
+* Start with an helmet
+* Start with a defined amount of armor
+##### Everything is configurable and disableable
 
 ## Contacts
 
