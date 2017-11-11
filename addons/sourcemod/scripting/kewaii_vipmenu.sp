@@ -10,7 +10,7 @@
 #define PLUGIN_NAME 			"VipMenu"
 #define PLUGIN_AUTHOR 			"Kewaii"
 #define PLUGIN_DESCRIPTION		"General VipMenu"
-#define PLUGIN_VERSION 			"1.7.0"
+#define PLUGIN_VERSION 			"1.7.2"
 #define PLUGIN_TAG 				"{pink}[VipMenu by Kewaii]{green}"
 
 public Plugin myinfo =
@@ -49,36 +49,47 @@ ConVar g_Cvar_BuffUnlimitedAmmoEnabled;
 ConVar g_Cvar_AutoHelmetEnabled;
 ConVar g_Cvar_AutoArmorEnabled;
 ConVar g_Cvar_AutoArmorQuantity;
+ConVar g_Cvar_VIPSpawnEnabled;
+ConVar g_Cvar_HealthRegenEnabled;
+ConVar g_Cvar_MaxHealthQuantity;
+ConVar g_Cvar_HealthRegenedQuantity;
 
 bool g_bAutoHelmetEnabled, g_bAutoArmorEnabled, g_bBuffUnlimitedAmmoEnabled;
 int g_iAutoArmorQuantity;
+int g_iMaxHealth, g_iHealthRegenedQuantity;
 bool g_bWeaponsEnabled, g_bBuffsEnabled, g_bWeaponAWPEnabled, g_bWeaponAK47Enabled, g_bWeaponM4A1Enabled, g_bWeaponM4A1_SilencerEnabled, g_bBuffMedicKitEnabled, g_bBuffWHEnabled;
 public void OnPluginStart()
 {
 	g_Cvar_BenefitsMax = CreateConVar("kewaii_vipmenu_benefits_max", "3", "Maximum allowed amount of benefits per round");
 	
-	g_Cvar_WeaponsEnabled = CreateConVar("kewaii_vipmenu_weapons", "1", "Enables/Disables Weapons");
+	g_Cvar_WeaponsEnabled = CreateConVar("kewaii_vipmenu_weapons", "1", "Enables/Disables Weapons", _, true, 0.0, true, 1.0);
 	g_Cvar_WeaponsMax = CreateConVar("kewaii_vipmenu_weapons_max", "2", "Maximum allowed amount of weapons per round");
 	
-	g_Cvar_BuffsEnabled = CreateConVar("kewaii_vipmenu_buffs", "1", "Enables/Disables Buffs");
+	g_Cvar_BuffsEnabled = CreateConVar("kewaii_vipmenu_buffs", "1", "Enables/Disables Buffs", _, true, 0.0, true, 1.0);
 	g_Cvar_BuffsMax = CreateConVar("kewaii_vipmenu_buffs_max", "2", "Maximum allowed amount of buffs per round");
 	
-	g_Cvar_WeaponAWPEnabled = CreateConVar("kewaii_vipmenu_weapon_awp", "1", "Enables/Disables AWP");
-	g_Cvar_WeaponAK47Enabled = CreateConVar("kewaii_vipmenu_weapon_ak47", "1", "Enables/Disables AK47");
-	g_Cvar_WeaponM4A1Enabled = CreateConVar("kewaii_vipmenu_weapon_m4a1", "1", "Enables/Disables M4A4");
-	g_Cvar_WeaponM4A1_SilencerEnabled = CreateConVar("kewaii_vipmenu_weapon_m4a1_silencer", "1", "Enables/Disables M4A1-S");
+	g_Cvar_WeaponAWPEnabled = CreateConVar("kewaii_vipmenu_weapon_awp", "1", "Enables/Disables AWP", _, true, 0.0, true, 1.0);
+	g_Cvar_WeaponAK47Enabled = CreateConVar("kewaii_vipmenu_weapon_ak47", "1", "Enables/Disables AK47", _, true, 0.0, true, 1.0);
+	g_Cvar_WeaponM4A1Enabled = CreateConVar("kewaii_vipmenu_weapon_m4a1", "1", "Enables/Disables M4A4", _, true, 0.0, true, 1.0);
+	g_Cvar_WeaponM4A1_SilencerEnabled = CreateConVar("kewaii_vipmenu_weapon_m4a1_silencer", "1", "Enables/Disables M4A1-S", _, true, 0.0, true, 1.0);
 	
-	g_Cvar_BuffWHEnabled = CreateConVar("kewaii_vipmenu_buff_wh", "1", "Enables/Disables WH Grenade");
-	g_Cvar_BuffMedicKitEnabled = CreateConVar("kewaii_vipmenu_buff_medickit", "1", "Enables/Disables Medic Kit");
+	g_Cvar_BuffWHEnabled = CreateConVar("kewaii_vipmenu_buff_wh", "1", "Enables/Disables WH Grenade", _, true, 0.0, true, 1.0);
+	g_Cvar_BuffMedicKitEnabled = CreateConVar("kewaii_vipmenu_buff_medickit", "1", "Enables/Disables Medic Kit", _, true, 0.0, true, 1.0);
 	
-	g_Cvar_BuffUnlimitedAmmoEnabled = CreateConVar("kewaii_vipmenu_buff_unlimitedammo", "1", "Enables/Disables Unlimited Ammo");
+	g_Cvar_BuffUnlimitedAmmoEnabled = CreateConVar("kewaii_vipmenu_buff_unlimitedammo", "1", "Enables/Disables Unlimited Ammo", _, true, 0.0, true, 1.0);
 	
-	g_Cvar_AutoHelmetEnabled = CreateConVar("kewaii_vipmenu_auto_helmet", "1", "Enables/Disables Helmet on Spawn");
-	g_Cvar_AutoArmorEnabled = CreateConVar("kewaii_vipmenu_auto_armor", "1", "Enables/Disables Armor on Spawn");
+	g_Cvar_AutoHelmetEnabled = CreateConVar("kewaii_vipmenu_auto_helmet", "1", "Enables/Disables Helmet on Spawn", _, true, 0.0, true, 1.0);
+	g_Cvar_AutoArmorEnabled = CreateConVar("kewaii_vipmenu_auto_armor", "1", "Enables/Disables Armor on Spawn", _, true, 0.0, true, 1.0);
 	g_Cvar_AutoArmorQuantity = CreateConVar("kewaii_vipmenu_auto_armorquantity", "100", "Defines Armor Quantity", _, true, 1.0, true, 500.0);
+	
+	g_Cvar_VIPSpawnEnabled = CreateConVar("kewaii_vipmenu_vipspawn", "1", "Enables/Disables VIPSpawn", _, true, 0.0, true, 1.0);
+	
+	g_Cvar_HealthRegenEnabled = CreateConVar("kewaii_vipmenu_healthregen", "1", "Enables/Disables Health Regen", _, true, 0.0, true, 1.0);
+	g_Cvar_HealthRegenedQuantity = CreateConVar("kewaii_vipmenu_healthregened", "10", "Defines Quantity of Health Regened per kill", _, true, 1.0, true, 50.0);
+	g_Cvar_MaxHealthQuantity = CreateConVar("kewaii_vipmenu_maxhealth", "150", "Defines Max Health that a player can get", _, true, 101.0, true, 500.0);
 	HookEvent("round_start", Event_RoundStart);
 	HookEvent("weapon_fire", ClientWeaponReload);
-	
+	HookEvent("player_death", OnPlayerDeath);
 	RegConsoleCmd("sm_vipspawn", Command_VIPSpawn);
 	RegConsoleCmd("sm_vipmenu", VipMenu, "Opens VIPMenu");
 	
@@ -95,11 +106,42 @@ public void OnPluginStart()
 	}
 }
 
+public Action OnPlayerDeath(Handle event, char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(GetEventInt(event, "attacker"));
+	int dead = GetClientOfUserId(GetEventInt(event, "userid"));
+	if (view_as<bool>(GetConVarInt(g_Cvar_HealthRegenEnabled)))
+	{
+		if (HasClientFlag(client, ADMFLAG_CUSTOM1))
+		{
+			int OldHealth = GetEntProp(client, Prop_Send, "m_iHealth", 4, 0);
+			if (dead != client)
+			{
+				if (GetClientTeam(client) > 1)
+				{				
+					g_iHealthRegenedQuantity = GetConVarInt(g_Cvar_HealthRegenedQuantity);
+					g_iMaxHealth = GetConVarInt(g_Cvar_MaxHealthQuantity);
+					if (g_iHealthRegenedQuantity + OldHealth > g_iMaxHealth)
+					{	
+						SetEntProp(client, Prop_Send, "m_iHealth", g_iMaxHealth, 4, 0);
+					}
+					else
+					{
+						SetEntProp(client, Prop_Send, "m_iHealth", OldHealth + g_iHealthRegenedQuantity, 4, 0);
+					}
+				}
+			}
+		}
+	}
+}
 public Action VipMenu(int client, int args)
 {
 	if (HasClientFlag(client, ADMFLAG_CUSTOM1))
 	{
-		CreateMainMenu().Display(client, MENU_TIME_FOREVER);
+		if (GetClientTeam(client) > 1)
+		{
+			CreateMainMenu().Display(client, MENU_TIME_FOREVER);
+		}
 	}
 	return Plugin_Handled;
 }
@@ -118,19 +160,22 @@ public Action Event_RoundStart(Handle event, const char[] name, bool dontBroadca
 		{
 			if (HasClientFlag(i, ADMFLAG_CUSTOM1))
 			{
-				CreateMainMenu().Display(i, MENU_TIME_FOREVER);			
+				if (GetClientTeam(i) > 1)
+				{
+					CreateMainMenu().Display(i, MENU_TIME_FOREVER);		
+					if (g_bAutoArmorEnabled)
+					{
+						SetEntProp(i, Prop_Send, "m_ArmorValue", g_iAutoArmorQuantity);
+					}
+					if (g_bAutoHelmetEnabled)
+					{
+						SetEntProp(i, Prop_Send, "m_bHasHelmet", 1);
+					}		
+				}			
 				BenefitsChosen[i] = 0;
 				extrasChosen[i] = 0;
 				weaponsChosen[i] = 0;
-				revived[i] = false;
-				if (g_bAutoArmorEnabled)
-				{
-					SetEntProp(i, Prop_Send, "m_ArmorValue", g_iAutoArmorQuantity);
-				}
-				if (g_bAutoHelmetEnabled)
-				{
-					SetEntProp(i, Prop_Send, "m_bHasHelmet", 1);
-				}			
+				revived[i] = false;			
 			}
 			isUsingUnlimitedAmmo[i] = false;
         }
@@ -417,25 +462,28 @@ public Action Command_VIPSpawn(int client, int args)
 		return Plugin_Handled;
 	}
 	
-	if (!IsPlayerAlive(client))
+	if (view_as<bool> (GetConVarInt(g_Cvar_VIPSpawnEnabled)))
 	{
-		if (HasClientFlag(client, ADMFLAG_CUSTOM1))
+		if (!IsPlayerAlive(client))
 		{
-			if (revived[client] == false) 
-			{			
-				CS_RespawnPlayer(client);
-				CPrintToChatAll("%s O jogador{red} %N {green}foi revivido!", PLUGIN_TAG, client);
-				revived[client] = true;
+			if (HasClientFlag(client, ADMFLAG_CUSTOM1))
+			{
+				if (revived[client] == false) 
+				{	
+					CS_RespawnPlayer(client);
+					CPrintToChatAll("%s O jogador{red} %N {green}foi revivido!", PLUGIN_TAG, client);
+					revived[client] = true;
+				}
+			}
+			else
+			{
+				CPrintToChat(client, "%s Se queres reviver tens que comprar {red}VIP{green}. faz {red}!vip", PLUGIN_TAG);		
 			}
 		}
 		else
 		{
-			CPrintToChat(client, "%s Se queres reviver tens que comprar {red}VIP{green}. faz {red}!vip", PLUGIN_TAG);		
+			CPrintToChat(client, "%s Não Estás morto", PLUGIN_TAG);
 		}
-	}
-	else
-	{
-		CPrintToChat(client, "%s Não Estás morto", PLUGIN_TAG);
 	}
 	return Plugin_Handled;
 }
