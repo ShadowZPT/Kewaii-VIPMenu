@@ -299,7 +299,7 @@ Menu CreateMainMenu()
 		if (g_bBuffMedicKitEnabled) { 
 			menu.AddItem("Medkit", "MedKit");	
 		}	
-		if (g_bBuffMedicKitEnabled) { 
+		if (g_bBuffUnlimitedAmmoEnabled) { 
 			menu.AddItem("UnlimitedAmmo", "Balas Infinitas");	
 		}	
 	}
