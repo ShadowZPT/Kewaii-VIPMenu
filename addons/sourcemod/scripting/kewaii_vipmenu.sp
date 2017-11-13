@@ -35,7 +35,7 @@ public Action OnTakeDamage(int client, &attacker, &inflictor, &Float:damage, &da
 #define PLUGIN_NAME 			"VipMenu"
 #define PLUGIN_AUTHOR 			"Kewaii"
 #define PLUGIN_DESCRIPTION		"General VipMenu"
-#define PLUGIN_VERSION 			"1.7.3"
+#define PLUGIN_VERSION 			"1.7.4"
 #define PLUGIN_TAG 				"{pink}[VipMenu by Kewaii]{green}"
 
 public Plugin myinfo =
@@ -113,8 +113,10 @@ public void OnPluginStart()
 	g_Cvar_HealthRegenEnabled = CreateConVar("kewaii_vipmenu_healthregen", "1", "Enables/Disables Health Regen", _, true, 0.0, true, 1.0);
 	g_Cvar_HealthRegenedQuantity = CreateConVar("kewaii_vipmenu_healthregened", "10", "Defines Quantity of Health Regened per kill", _, true, 1.0, true, 50.0);
 	g_Cvar_MaxHealthQuantity = CreateConVar("kewaii_vipmenu_maxhealth", "150", "Defines Max Health that a player can get", _, true, 101.0, true, 500.0);
+	
 	g_Cvar_NoFallSoundEnabled = CreateConVar("kewaii_nofallsound", "1", "Enables/Disables No Fall Sound, 1 = No Sound / 0 = Sound", _, true, 0.0, true, 1.0);
 	g_Cvar_NoFallDamageEnabled = CreateConVar("kewaii_nofalldamage", "1", "Enables/Disables No Fall Damage, 1 = No Damage / 0 = Damage", _, true, 0.0, true, 1.0);
+	
 	HookEvent("round_start", Event_RoundStart);
 	HookEvent("weapon_fire", ClientWeaponReload);
 	HookEvent("player_death", OnPlayerDeath);
@@ -123,15 +125,7 @@ public void OnPluginStart()
 	
 	AutoExecConfig(true, "kewaii_vipmenu");
 	
-	LoadTranslations("kewaii_vipmenu.phrases");
-	
-	for(int i = 1; i <= MaxClients; i++)
-	{
-		if(IsClientInGame(i))
-		{
-			OnClientPutInServer(i);
-		}
-	}
+	LoadTranslations("kewaii_vipmenu.phrases");	
 	AddNormalSoundHook(SoundHook);
 }
 
