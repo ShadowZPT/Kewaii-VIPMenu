@@ -1,0 +1,114 @@
+"Phrases"
+{
+  "VIPMenu Title"
+  {
+	"en" "Buffs Menu"
+	"pt" "Menu VIP"x
+  } 
+  "BuffsMenu Title"
+  {
+	"en" "Buffs Menu"
+	"pt" "Menu de Benefícios"
+  } 
+  "WeaponsMenu Title"
+  {
+	"en" "Weapons Menu"
+	"pt" "Menu de Armas"
+  } 
+  "Weapons Item"
+  {
+	"en" "Weapons"
+	"pt" "Armas"
+  } 
+  "Buffs Item"
+  {
+	"en" "Buffs"
+	"pt" "Benefícios"
+  } 
+  "Menu Go Back"
+  {
+	"en" "Back"
+	"pt" "Voltar"
+  }
+  "Menu Leave"
+  {
+	"en" "Leave"
+	"pt" "Sair"
+  }
+  "WallHack Grenade"
+  {
+	"en" "WallHack Grenade"
+	"pt" "Granada de WallHack"
+  } 
+  "Medic Kit"
+  {
+	"en" "Medic Kit"
+	"pt" "Kit Médico"
+  } 
+  "Unlimited Bullets"
+  {
+	"en" "Unlimited Bullets"
+	"pt" "Balas Infinitas"
+  } 
+  "AWP Deagle"
+  {
+	"en" "AWP and Deagle"
+	"pt" "AWP e Deagle"
+  } 
+  "AK47 Deagle"
+  {
+	"en" "AK47 and Deagle"
+	"pt" "AK47 e Deagle"
+  } 
+  "M4A4 Deagle"
+  {
+	"en" "M4A4 and Deagle"
+	"pt" "M4A4 e Deagle"
+  } 
+  "M4A1-S Deagle"
+  {
+	"en" "M4A1-S and Deagle"
+	"pt" "M4A1-S e Deagle"
+  }
+  "Weapon Selected"
+  {
+	"en" "You selected weapon: "
+	"pt" "Escolheste a arma: "
+  }
+  "Buff Selected"
+  {
+	"en" "You selected buff: "
+	"pt" "Escolheste o benefício: "
+  }
+  "Reached Buffs Limit"
+  {
+	"en" "You reached the limit of buffs per round"
+	"pt" "Chegaste ao limite de benefícios por ronda"
+  }
+  "Reached Weapons Limit"
+  {
+	"en" "You reached the limit of weapons per round"
+	"pt" "Chegaste ao limite de armas por ronda"
+  }
+  "Player Not Dead"
+  {
+    "en" "You are not dead."
+	"pt" "Não estás morto."
+  }
+  "VIPSpawn Not Allowed"
+  {
+	"en" "If you want to {red}vipspawn{green} you have to buy {red}VIP{green}."
+	"pt" "Se queres usar vipspawn tens que comprar {red}VIP{green}."
+  }
+  "Player Revived"
+  {
+    "#format" "{1:N}"
+	"en" "Player {red}{1} {green}used vipspawn!"
+	"pt" "O Jogador {red}{1} {green}usou vipspawn!"
+  }
+  "Player Already Used VIPSpawn"
+  {
+	"en" "You already used vipspawn!"
+	"pt" "Já usaste vipspawn!"
+  }
+}

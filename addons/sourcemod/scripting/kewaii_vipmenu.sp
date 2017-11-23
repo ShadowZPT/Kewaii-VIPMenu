@@ -35,7 +35,7 @@ public Action OnTakeDamage(int client, &attacker, &inflictor, &Float:damage, &da
 #define PLUGIN_NAME 			"VipMenu"
 #define PLUGIN_AUTHOR 			"Kewaii"
 #define PLUGIN_DESCRIPTION		"General VipMenu"
-#define PLUGIN_VERSION 			"1.7.4"
+#define PLUGIN_VERSION 			"1.7.5"
 #define PLUGIN_TAG 				"{pink}[VipMenu by Kewaii]{green}"
 
 public Plugin myinfo =
@@ -48,7 +48,6 @@ public Plugin myinfo =
 };
 
 bool revived[MAXPLAYERS+1] = false;
-bool choseOnce[MAXPLAYERS + 1] = false;
 bool isUsingUnlimitedAmmo[MAXPLAYERS + 1] = false;
 
 int BenefitsChosen[MAXPLAYERS + 1] = 0;
@@ -86,6 +85,7 @@ bool g_bWeaponsEnabled, g_bBuffsEnabled, g_bWeaponAWPEnabled, g_bWeaponAK47Enabl
 
 public void OnPluginStart()
 {
+	LoadTranslations("kewaii_vipmenu.phrases");
 	g_Cvar_BenefitsMax = CreateConVar("kewaii_vipmenu_benefits_max", "3", "Maximum allowed amount of benefits per round");
 	
 	g_Cvar_WeaponsEnabled = CreateConVar("kewaii_vipmenu_weapons", "1", "Enables/Disables Weapons", _, true, 0.0, true, 1.0);
@@ -124,8 +124,6 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_vipmenu", VipMenu, "Opens VIPMenu");
 	
 	AutoExecConfig(true, "kewaii_vipmenu");
-	
-	LoadTranslations("kewaii_vipmenu.phrases");	
 	AddNormalSoundHook(SoundHook);
 }
 
@@ -163,7 +161,7 @@ public Action VipMenu(int client, int args)
 	{
 		if (GetClientTeam(client) > 1)
 		{
-			CreateMainMenu().Display(client, MENU_TIME_FOREVER);
+			CreateMainMenu(client).Display(client, MENU_TIME_FOREVER);
 		}
 	}
 	return Plugin_Handled;
@@ -185,7 +183,7 @@ public Action Event_RoundStart(Handle event, const char[] name, bool dontBroadca
 			{
 				if (GetClientTeam(i) > 1)
 				{
-					CreateMainMenu().Display(i, MENU_TIME_FOREVER);		
+					CreateMainMenu(i).Display(i, MENU_TIME_FOREVER);		
 					if (g_bAutoArmorEnabled)
 					{
 						SetEntProp(i, Prop_Send, "m_ArmorValue", g_iAutoArmorQuantity);
@@ -206,51 +204,71 @@ public Action Event_RoundStart(Handle event, const char[] name, bool dontBroadca
  
 }
 
-Menu CreateBuffsMenu()
+Menu CreateBuffsMenu(int client)
 {
 	Menu menu = new Menu(BuffsMenuHandler);
-	menu.SetTitle("Buffs Menu by Kewaii");	
+	char title[64];
+	Format(title, sizeof(title), "%T by Kewaii", "BuffsMenu Title", client);
+	menu.SetTitle(title);	
 	g_bBuffWHEnabled = view_as<bool> (GetConVarInt(g_Cvar_BuffWHEnabled));
 	g_bBuffMedicKitEnabled = view_as<bool> (GetConVarInt(g_Cvar_BuffMedicKitEnabled));
 	g_bBuffUnlimitedAmmoEnabled = view_as<bool> (GetConVarInt(g_Cvar_BuffUnlimitedAmmoEnabled));
+	char menuItem[64];
 	if (g_bBuffWHEnabled) { 
-		menu.AddItem("WH", "Granada de WallHack");
+		Format(menuItem, sizeof(menuItem), "%T", "WallHack Grenade", client);
+		menu.AddItem("WH", menuItem);
 	}
 	if (g_bBuffMedicKitEnabled) { 
-		menu.AddItem("Medkit", "MedKit");	
+		Format(menuItem, sizeof(menuItem), "%T", "Medic Kit", client);
+		menu.AddItem("Medkit", menuItem);	
 	}
 	if (g_bBuffUnlimitedAmmoEnabled) { 
-		menu.AddItem("UnlimitedAmmo", "Balas Infinitas");	
+		Format(menuItem, sizeof(menuItem), "%T", "Unlimited Bullets", client);
+		menu.AddItem("UnlimitedAmmo", menuItem);
 	}
-	menu.ExitBackButton = true;
+	char lastItem[32];
+	Format(lastItem, sizeof(lastItem), "%T", "Menu Go Back", client);
+	menu.AddItem("Leave", lastItem);
 	return menu;
 }
 
-Menu CreateWeaponsMenu()
+Menu CreateWeaponsMenu(int client)
 {
 	Menu menu = new Menu(WeaponsMenuHandler);
-	menu.SetTitle("Weapons Menu by Kewaii");	
+	char title[64];
+	Format(title, sizeof(title), "%T by Kewaii", "WeaponsMenu Title", client);
+	menu.SetTitle(title);
 	g_bWeaponAWPEnabled = view_as<bool> (GetConVarInt(g_Cvar_WeaponAWPEnabled));
 	g_bWeaponAK47Enabled = view_as<bool> (GetConVarInt(g_Cvar_WeaponAK47Enabled));
 	g_bWeaponM4A1Enabled = view_as<bool> (GetConVarInt(g_Cvar_WeaponM4A1Enabled));
 	g_bWeaponM4A1_SilencerEnabled = view_as<bool> (GetConVarInt(g_Cvar_WeaponM4A1_SilencerEnabled));
 	if (g_bWeaponAWPEnabled) {
-		menu.AddItem("AWP_Deagle", "AWP & Deagle");
+		char menuItem[64];
+		Format(menuItem, sizeof(menuItem), "%T", "AWP Deagle", client);
+		menu.AddItem("AWP_Deagle", menuItem);
 	}	
 	if (g_bWeaponAK47Enabled) {
-		menu.AddItem("AK47_Deagle", "AK47 & Deagle");
+		char menuItem[64];
+		Format(menuItem, sizeof(menuItem), "%T", "AK47 Deagle", client);
+		menu.AddItem("AK47_Deagle", menuItem);
 	}
 	if (g_bWeaponM4A1Enabled) {
-		menu.AddItem("M4A4_Deagle", "M4A4 & Deagle");
+		char menuItem[64];
+		Format(menuItem, sizeof(menuItem), "%T", "M4A4 Deagle", client);
+		menu.AddItem("M4A4_Deagle", menuItem);
 	}
 	if (g_bWeaponM4A1_SilencerEnabled) {
-		menu.AddItem("M4A1S_Deagle", "M4A1S & Deagle");
+		char menuItem[64];
+		Format(menuItem, sizeof(menuItem), "%T", "M4A1-S Deagle", client);
+		menu.AddItem("M4A1S_Deagle", menuItem);
 	}
-	menu.ExitBackButton = true;
+	char lastItem[32];
+	Format(lastItem, sizeof(lastItem), "%T", "Menu Go Back", client);
+	menu.AddItem("Leave", lastItem);
 	return menu;
 }
 
-Menu CreateMainMenu()
+Menu CreateMainMenu(int client)
 {
 	Menu menu;
 	g_bWeaponsEnabled = view_as<bool> (GetConVarInt(g_Cvar_WeaponsEnabled));
@@ -262,42 +280,56 @@ Menu CreateMainMenu()
 	g_bBuffsEnabled = view_as<bool> (GetConVarInt(g_Cvar_BuffsEnabled));
 	g_bBuffWHEnabled = view_as<bool> (GetConVarInt(g_Cvar_BuffWHEnabled));
 	g_bBuffMedicKitEnabled = view_as<bool> (GetConVarInt(g_Cvar_BuffMedicKitEnabled));
+	char title[64], menuItem[64];
+	Format(title, sizeof(title), "%T by Kewaii", "VIPMenu Title", client);
 	if (g_bWeaponsEnabled && g_bBuffsEnabled) {
 		menu = new Menu(MainMenuHandler);
-		menu.SetTitle("Vip Menu by Kewaii");	
-		menu.AddItem("Weapons", "Armas");
-		menu.AddItem("Buffs", "Buffs");
+		menu.SetTitle(title);	
+		char weaponsItem[32], buffsItem[32];
+		Format(weaponsItem, sizeof(weaponsItem), "%T", "Weapons Item", client);
+		Format(buffsItem, sizeof(buffsItem), "%T", "Buffs Item", client);
+		menu.AddItem("Weapons", weaponsItem);
+		menu.AddItem("Buffs", buffsItem);
 	}
 	else if (g_bWeaponsEnabled) {
 		menu = new Menu(WeaponsMenuHandler);
-		menu.SetTitle("Vip Menu by Kewaii");
+		menu.SetTitle(title);
 		if (g_bWeaponAWPEnabled) {
-			menu.AddItem("AWP_Deagle", "AWP & Deagle");
+			Format(menuItem, sizeof(menuItem), "%T", "AWP Deagle", client);
+			menu.AddItem("AWP_Deagle", menuItem);
 		}	
 		if (g_bWeaponAK47Enabled) {
-			menu.AddItem("AK47_Deagle", "AK47 & Deagle");
+			Format(menuItem, sizeof(menuItem), "%T", "AK47 Deagle", client);
+			menu.AddItem("AK47_Deagle", menuItem);
 		}
 		if (g_bWeaponM4A1Enabled) {
-			menu.AddItem("M4A4_Deagle", "M4A4 & Deagle");
+			Format(menuItem, sizeof(menuItem), "%T", "M4A4 Deagle", client);
+			menu.AddItem("M4A4_Deagle", menuItem);
 		}
 		if (g_bWeaponM4A1_SilencerEnabled) {
-			menu.AddItem("M4A1S_Deagle", "M4A1S & Deagle");
+			Format(menuItem, sizeof(menuItem), "%T", "M4A1-S Deagle", client);
+			menu.AddItem("M4A1S_Deagle", menuItem);
 		}
 	}
 	else if (g_bBuffsEnabled) {
 		menu = new Menu(BuffsMenuHandler);
-		menu.SetTitle("Vip Menu by Kewaii");
+		menu.SetTitle(title);
 		if (g_bBuffWHEnabled) { 
-			menu.AddItem("WH", "Granada de WallHack");
+			Format(menuItem, sizeof(menuItem), "%T", "WallHack Grenade", client);
+			menu.AddItem("WH", menuItem);
 		}
 		if (g_bBuffMedicKitEnabled) { 
-			menu.AddItem("Medkit", "MedKit");	
-		}	
+			Format(menuItem, sizeof(menuItem), "%T", "Medic Kit", client);
+			menu.AddItem("Medkit", menuItem);	
+		}
 		if (g_bBuffUnlimitedAmmoEnabled) { 
-			menu.AddItem("UnlimitedAmmo", "Balas Infinitas");	
-		}	
+			Format(menuItem, sizeof(menuItem), "%T", "Unlimited Bullets", client);
+			menu.AddItem("UnlimitedAmmo", menuItem);
+		}
 	}
-	menu.AddItem("Leave", "Sair");
+	char lastItem[32];
+	Format(lastItem, sizeof(lastItem), "%T", "Menu Leave", client);
+	menu.AddItem("Leave", lastItem);
 	menu.ExitButton = false;
 	return menu;
 }
@@ -310,43 +342,52 @@ public int BuffsMenuHandler(Menu menu, MenuAction action, int client, int select
 		{
 			if(IsClientInGame(client))
 			{
+				bool hasSelectedBonus = false;
 				char menuIdStr[32];
 				menu.GetItem(selection, menuIdStr, sizeof(menuIdStr));
+				char msg[128];
+				Format(msg, sizeof(msg), "%s %T", PLUGIN_TAG, "Buff Selected", client);
 				if (extrasChosen[client] < MaxExtras && BenefitsChosen[client] < MaxBenefits)
 				{				
 					if (StrEqual(menuIdStr, "Medkit"))
 					{		
-						CPrintToChat(client, "%s Escolheste o bônus: {red}Medic Kit{green}.", PLUGIN_TAG);
+						Format(msg, sizeof(msg), "%s{red}%T", msg, "Medic Kit", client);
 						GivePlayerItem(client, "weapon_healthshot");
 						extrasChosen[client]++;
 						BenefitsChosen[client]++;
+						hasSelectedBonus = true;
 					}
-					if (StrEqual(menuIdStr, "WH"))
-					{
-						CPrintToChat(client, "%s Escolheste o bônus: {red}Granada de WallHack{green}.", PLUGIN_TAG);
+					else if (StrEqual(menuIdStr, "WH"))
+					{	
+						Format(msg, sizeof(msg), "%s{red}%T", msg, "WallHack Grenade", client);
 						GivePlayerItem(client, "weapon_tagrenade");
 						extrasChosen[client]++;
 						BenefitsChosen[client]++;
+						hasSelectedBonus = true;
 					}
-					if (StrEqual(menuIdStr, "UnlimitedAmmo"))
-					{
-						CPrintToChat(client, "%s Escolheste o bônus: {red}Balas Infinitas{green}.", PLUGIN_TAG);
+					else if (StrEqual(menuIdStr, "UnlimitedAmmo"))
+					{	
+						Format(msg, sizeof(msg), "%s{red}%T", msg, "Unlimited Bullets", client);
 						isUsingUnlimitedAmmo[client] = true;
 						extrasChosen[client]++;
 						BenefitsChosen[client]++;
+						hasSelectedBonus = true;					
+					}			
+					if (hasSelectedBonus)
+					{						
+						CPrintToChat(client, msg);
+						hasSelectedBonus = false;	
 					}
 				}
 				else
-				{
-					CPrintToChat(client, "%s Já chegaste ao máximo de buffs esta ronda", PLUGIN_TAG);
+				{	
+					Format(msg, sizeof(msg), "%s %T", PLUGIN_TAG, "Reached Buffs Limit", client);					
+					CPrintToChat(client, msg);
 				}
-			}
-		}
-		case MenuAction_Cancel:
-		{
-			if (IsClientInGame(client) && selection == MenuCancel_ExitBack)
-			{
-				CreateMainMenu().Display(client, 15);
+				if (StrEqual(menuIdStr, "Leave"))
+				{
+					CreateMainMenu(client).Display(client, 15);							
+				}		
 			}
 		}
 		case MenuAction_End:
@@ -364,13 +405,16 @@ public int WeaponsMenuHandler(Menu menu, MenuAction action, int client, int sele
 		{
 			if(IsClientInGame(client))
 			{
+				bool hasSelectedBonus = false;
 				char menuIdStr[32];
 				menu.GetItem(selection, menuIdStr, sizeof(menuIdStr));
+				char msg[128];
+				Format(msg, sizeof(msg), "%s %T", PLUGIN_TAG, "Weapon Selected", client);
 				if (weaponsChosen[client] < MaxWeapons && BenefitsChosen[client] < MaxBenefits)
 				{		
 					if (StrEqual(menuIdStr, "AWP_Deagle"))
 					{
-						CPrintToChat(client, "%s Escolheste o bônus: {red}AWP e Deagle{green}.", PLUGIN_TAG);
+						Format(msg, sizeof(msg), "%s{red}%T", msg, "AWP Deagle", client);
 						int wep = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
 						if(wep != -1) 
 							AcceptEntityInput(wep, "Kill");
@@ -378,11 +422,11 @@ public int WeaponsMenuHandler(Menu menu, MenuAction action, int client, int sele
 						SetEntPropEnt(newWep, Prop_Data, "m_hOwnerEntity", client);
 						EquipPlayerWeapon(client, newWep);
 						SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", newWep);
-						choseOnce[client] = true;
+						hasSelectedBonus = true;
 					}
-					if (StrEqual(menuIdStr, "AK47_Deagle"))
+					else if (StrEqual(menuIdStr, "AK47_Deagle"))
 					{
-						CPrintToChat(client, "%s Escolheste o bônus: {red}AK47 e Deagle{green}.", PLUGIN_TAG);
+						Format(msg, sizeof(msg), "%s{red}%T", msg, "AK47 Deagle", client);
 						int wep = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
 						if(wep != -1) 
 							AcceptEntityInput(wep, "Kill");
@@ -390,11 +434,11 @@ public int WeaponsMenuHandler(Menu menu, MenuAction action, int client, int sele
 						SetEntPropEnt(newWep, Prop_Data, "m_hOwnerEntity", client);
 						EquipPlayerWeapon(client, newWep);
 						SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", newWep);
-						choseOnce[client] = true;
+						hasSelectedBonus = true;
 					}
-					if (StrEqual(menuIdStr, "M4A4_Deagle"))
+					else if (StrEqual(menuIdStr, "M4A4_Deagle"))
 					{
-						CPrintToChat(client, "%s Escolheste o bônus: {red}M4A4 e Deagle{green}.", PLUGIN_TAG);
+						Format(msg, sizeof(msg), "%s{red}%T", msg, "M4A4 Deagle", client);
 						int wep = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
 						if(wep != -1) 
 							AcceptEntityInput(wep, "Kill");
@@ -402,11 +446,11 @@ public int WeaponsMenuHandler(Menu menu, MenuAction action, int client, int sele
 						SetEntPropEnt(newWep, Prop_Data, "m_hOwnerEntity", client);
 						EquipPlayerWeapon(client, newWep);
 						SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", newWep);
-						choseOnce[client] = true;
+						hasSelectedBonus = true;
 					}
-					if (StrEqual(menuIdStr, "M4A1S_Deagle"))
+					else if (StrEqual(menuIdStr, "M4A1S_Deagle"))
 					{
-						CPrintToChat(client, "%s Escolheste o bônus: {red}M4A1-S e Deagle{green}.", PLUGIN_TAG);
+						Format(msg, sizeof(msg), "%s{red}%T", msg, "M4A1-S Deagle", client);
 						int wep = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
 						if(wep != -1) 
 							AcceptEntityInput(wep, "Kill");
@@ -414,10 +458,11 @@ public int WeaponsMenuHandler(Menu menu, MenuAction action, int client, int sele
 						SetEntPropEnt(newWep, Prop_Data, "m_hOwnerEntity", client);
 						EquipPlayerWeapon(client, newWep);
 						SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", newWep);
-						choseOnce[client] = true;
+						hasSelectedBonus = true;
 					}
-					if(choseOnce[client])
+					if(hasSelectedBonus)
 					{
+						CPrintToChat(client, msg);
 						weaponsChosen[client]++;
 						BenefitsChosen[client]++;
 						int wep = GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
@@ -427,20 +472,18 @@ public int WeaponsMenuHandler(Menu menu, MenuAction action, int client, int sele
 						SetEntPropEnt(newWep, Prop_Data, "m_hOwnerEntity", client);
 						EquipPlayerWeapon(client, newWep);
 						SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", newWep);
-						choseOnce[client] = false;
+						hasSelectedBonus = false;
 					}
 				}
 				else
-				{
-					CPrintToChat(client, "%s Já chegaste ao máximo de armas esta ronda", PLUGIN_TAG);
+				{	
+					Format(msg, sizeof(msg), "%s %T", PLUGIN_TAG, "Reached Weapons Limit", client);					
+					CPrintToChat(client, msg);
 				}
-			}
-		}
-		case MenuAction_Cancel:
-		{
-			if (IsClientInGame(client) && selection == MenuCancel_ExitBack)
-			{
-				CreateMainMenu().Display(client, 15);
+				if (StrEqual(menuIdStr, "Leave"))
+				{
+					CreateMainMenu(client).Display(client, 15);							
+				}	
 			}
 		}
 		case MenuAction_End:
@@ -462,11 +505,11 @@ public int MainMenuHandler(Menu menu, MenuAction action, int client, int selecti
 				menu.GetItem(selection, menuIdStr, sizeof(menuIdStr));
 				if (StrEqual(menuIdStr, "Weapons"))
 				{
-					CreateWeaponsMenu().Display(client, MENU_TIME_FOREVER);
+					CreateWeaponsMenu(client).Display(client, MENU_TIME_FOREVER);
 				}
 				if (StrEqual(menuIdStr, "Buffs"))
 				{
-					CreateBuffsMenu().Display(client, MENU_TIME_FOREVER);
+					CreateBuffsMenu(client).Display(client, MENU_TIME_FOREVER);
 				}
 				if (StrEqual(menuIdStr, "Leave"))
 				{
@@ -484,7 +527,7 @@ public Action Command_VIPSpawn(int client, int args)
 		PrintToServer("%t","Command is in-game only");
 		return Plugin_Handled;
 	}
-	
+	char msg[128];
 	if (view_as<bool> (GetConVarInt(g_Cvar_VIPSpawnEnabled)))
 	{
 		if (!IsPlayerAlive(client))
@@ -494,18 +537,25 @@ public Action Command_VIPSpawn(int client, int args)
 				if (revived[client] == false) 
 				{	
 					CS_RespawnPlayer(client);
-					CPrintToChatAll("%s O jogador{red} %N {green}foi revivido!", PLUGIN_TAG, client);
+					CPrintToChatAll("%s %t", PLUGIN_TAG, "Player Revived", client);
 					revived[client] = true;
+				}
+				else
+				{
+					Format(msg, sizeof(msg), "%s %T", PLUGIN_TAG, "Player Already Used VIPSpawn", client);
+					CPrintToChat(client, msg);					
 				}
 			}
 			else
 			{
-				CPrintToChat(client, "%s Se queres reviver tens que comprar {red}VIP{green}. faz {red}!vip", PLUGIN_TAG);		
+				Format(msg, sizeof(msg), "%s %T", PLUGIN_TAG, "VIPSpawn Not Allowed", client);
+				CPrintToChat(client, msg);
 			}
 		}
 		else
 		{
-			CPrintToChat(client, "%s Não Estás morto", PLUGIN_TAG);
+			Format(msg, sizeof(msg), "%s %T", PLUGIN_TAG, "Player Not Dead", client);
+			CPrintToChat(client, msg);
 		}
 	}
 	return Plugin_Handled;
