@@ -3,7 +3,7 @@
   "VIPMenu Title"
   {
 	"en" "Buffs Menu"
-	"pt" "Menu VIP"x
+	"pt" "Menu VIP"
   } 
   "BuffsMenu Title"
   {

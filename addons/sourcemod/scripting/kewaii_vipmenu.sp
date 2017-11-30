@@ -161,7 +161,10 @@ public Action VipMenu(int client, int args)
 	{
 		if (GetClientTeam(client) > 1)
 		{
-			CreateMainMenu(client).Display(client, MENU_TIME_FOREVER);
+			if (weaponsChosen[client] < MaxWeapons && BenefitsChosen[client] < MaxBenefits)
+			{
+				CreateMainMenu(client).Display(client, MENU_TIME_FOREVER);
+			}
 		}
 	}
 	return Plugin_Handled;
@@ -228,7 +231,7 @@ Menu CreateBuffsMenu(int client)
 	}
 	char lastItem[32];
 	Format(lastItem, sizeof(lastItem), "%T", "Menu Go Back", client);
-	menu.AddItem("Leave", lastItem);
+	menu.AddItem("Back", lastItem);
 	return menu;
 }
 
@@ -264,7 +267,7 @@ Menu CreateWeaponsMenu(int client)
 	}
 	char lastItem[32];
 	Format(lastItem, sizeof(lastItem), "%T", "Menu Go Back", client);
-	menu.AddItem("Leave", lastItem);
+	menu.AddItem("Back", lastItem);
 	return menu;
 }
 
@@ -347,7 +350,15 @@ public int BuffsMenuHandler(Menu menu, MenuAction action, int client, int select
 				menu.GetItem(selection, menuIdStr, sizeof(menuIdStr));
 				char msg[128];
 				Format(msg, sizeof(msg), "%s %T", PLUGIN_TAG, "Buff Selected", client);
-				if (extrasChosen[client] < MaxExtras && BenefitsChosen[client] < MaxBenefits)
+				if (StrEqual(menuIdStr, "Leave"))
+				{
+					delete menu;
+				}		
+				else if (StrEqual(menuIdStr, "Back"))
+				{
+					CreateMainMenu(client).Display(client, 15);							
+				}	
+				else if (extrasChosen[client] < MaxExtras && BenefitsChosen[client] < MaxBenefits)
 				{				
 					if (StrEqual(menuIdStr, "Medkit"))
 					{		
@@ -383,11 +394,7 @@ public int BuffsMenuHandler(Menu menu, MenuAction action, int client, int select
 				{	
 					Format(msg, sizeof(msg), "%s %T", PLUGIN_TAG, "Reached Buffs Limit", client);					
 					CPrintToChat(client, msg);
-				}
-				if (StrEqual(menuIdStr, "Leave"))
-				{
-					CreateMainMenu(client).Display(client, 15);							
-				}		
+				}	
 			}
 		}
 		case MenuAction_End:
@@ -410,7 +417,15 @@ public int WeaponsMenuHandler(Menu menu, MenuAction action, int client, int sele
 				menu.GetItem(selection, menuIdStr, sizeof(menuIdStr));
 				char msg[128];
 				Format(msg, sizeof(msg), "%s %T", PLUGIN_TAG, "Weapon Selected", client);
-				if (weaponsChosen[client] < MaxWeapons && BenefitsChosen[client] < MaxBenefits)
+				if (StrEqual(menuIdStr, "Leave"))
+				{
+					delete menu;
+				}		
+				else if (StrEqual(menuIdStr, "Back"))
+				{
+					CreateMainMenu(client).Display(client, 15);							
+				}	
+				else if (weaponsChosen[client] < MaxWeapons && BenefitsChosen[client] < MaxBenefits)
 				{		
 					if (StrEqual(menuIdStr, "AWP_Deagle"))
 					{
@@ -479,10 +494,6 @@ public int WeaponsMenuHandler(Menu menu, MenuAction action, int client, int sele
 				{	
 					Format(msg, sizeof(msg), "%s %T", PLUGIN_TAG, "Reached Weapons Limit", client);					
 					CPrintToChat(client, msg);
-				}
-				if (StrEqual(menuIdStr, "Leave"))
-				{
-					CreateMainMenu(client).Display(client, 15);							
 				}	
 			}
 		}
@@ -507,11 +518,11 @@ public int MainMenuHandler(Menu menu, MenuAction action, int client, int selecti
 				{
 					CreateWeaponsMenu(client).Display(client, MENU_TIME_FOREVER);
 				}
-				if (StrEqual(menuIdStr, "Buffs"))
+				else if (StrEqual(menuIdStr, "Buffs"))
 				{
 					CreateBuffsMenu(client).Display(client, MENU_TIME_FOREVER);
 				}
-				if (StrEqual(menuIdStr, "Leave"))
+				else if (StrEqual(menuIdStr, "Leave"))
 				{
 					delete menu;
 				}
