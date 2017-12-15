@@ -86,13 +86,13 @@ bool g_bWeaponsEnabled, g_bBuffsEnabled, g_bWeaponAWPEnabled, g_bWeaponAK47Enabl
 public void OnPluginStart()
 {
 	LoadTranslations("kewaii_vipmenu.phrases");
-	g_Cvar_BenefitsMax = CreateConVar("kewaii_vipmenu_benefits_max", "3", "Maximum amount of benefits allowed per round");
+	g_Cvar_BenefitsMax = CreateConVar("kewaii_vipmenu_benefits_max", "3", "Maximum allowed amount of benefits per round");
 	
 	g_Cvar_WeaponsEnabled = CreateConVar("kewaii_vipmenu_weapons", "1", "Enables/Disables Weapons", _, true, 0.0, true, 1.0);
-	g_Cvar_WeaponsMax = CreateConVar("kewaii_vipmenu_weapons_max", "2", "Maximum amount of weapons allowed per round");
+	g_Cvar_WeaponsMax = CreateConVar("kewaii_vipmenu_weapons_max", "2", "Maximum allowed amount of weapons per round");
 	
 	g_Cvar_BuffsEnabled = CreateConVar("kewaii_vipmenu_buffs", "1", "Enables/Disables Buffs", _, true, 0.0, true, 1.0);
-	g_Cvar_BuffsMax = CreateConVar("kewaii_vipmenu_buffs_max", "2", "Maximum amount of buffs allowed per round");
+	g_Cvar_BuffsMax = CreateConVar("kewaii_vipmenu_buffs_max", "2", "Maximum allowed amount of buffs per round");
 	
 	g_Cvar_WeaponAWPEnabled = CreateConVar("kewaii_vipmenu_weapon_awp", "1", "Enables/Disables AWP", _, true, 0.0, true, 1.0);
 	g_Cvar_WeaponAK47Enabled = CreateConVar("kewaii_vipmenu_weapon_ak47", "1", "Enables/Disables AK47", _, true, 0.0, true, 1.0);

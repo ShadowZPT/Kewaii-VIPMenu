@@ -110,27 +110,28 @@
   }
   "Player Not Dead"
   {
-  "en" "You are not dead."
+    	"en" "You are not dead."
 	"pt" "Não estás morto."
 	"hu" "Jelenleg életben vagy."
+	
   }
   "VIPSpawn Not Allowed"
   {
 	"en" "If you want to {red}vipspawn{green} you have to buy {red}VIP{green}."
-	"pt" "Se queres usar o {red}vipspawn{green} tens que comprar {red}VIP{green}."
+	"pt" "Se queres usar vipspawn tens que comprar {red}VIP{green}."
 	"hu" "Ha fel akarsz éledni ,akkor venned kell {red}VIP{green}-et."
   }
   "Player Revived"
   {
     "#format" "{1:N}"
 	"en" "Player {red}{1} {green}used vipspawn!"
-	"pt" "O Jogador {red}{1} {green}usou o vipspawn!"
+	"pt" "O Jogador {red}{1} {green}usou vipspawn!"
 	"hu" "{red}{1} {green}felhasznált egy feleledést!"
   }
   "Player Already Used VIPSpawn"
   {
 	"en" "You already used vipspawn!"
-	"pt" "Já usaste o vipspawn!"
+	"pt" "Já usaste vipspawn!"
 	"hu" "Feléledtél!"
   }
 }
